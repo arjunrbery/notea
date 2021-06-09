@@ -16,11 +16,13 @@
 
 - Link: https://notea.cinwell.com
 
-## Requirement
+## Roadmap
 
-- [Next.js](https://nextjs.org/)
-- [S3](https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html)
-- [Vercel](https://vercel.com/), [Netlify](https://www.netlify.com/) or [Docker](https://www.docker.com/)
+- [x] Backlinks [#39](https://github.com/QingWei-Li/notea/issues/39)
+- [ ] File embed
+- [ ] Editing offline [#14](https://github.com/QingWei-Li/notea/issues/14)
+- [ ] Note versioning [#49](https://github.com/QingWei-Li/notea/issues/49)
+- [ ] File upload
 
 ## Quickstart
 

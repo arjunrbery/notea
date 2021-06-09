@@ -9,8 +9,9 @@ import noteCache from 'libs/web/cache/note'
 import useSettingsAPI from 'libs/web/api/settings'
 import dynamic from 'next/dynamic'
 import { useToast } from 'libs/web/hooks/use-toast'
+import DeleteAlert from 'components/editor/delete-alert'
 
-const NoteEdit = dynamic(() => import('components/editor/note-edit'))
+const MainEditor = dynamic(() => import('components/editor/main-editor'))
 
 export const EditContainer = () => {
   const {
@@ -20,6 +21,7 @@ export const EditContainer = () => {
   const { genNewId } = NoteTreeState.useContainer()
   const {
     fetchNote,
+    abortFindNote,
     findOrCreateNote,
     initNote,
     note,
@@ -45,10 +47,14 @@ export const EditContainer = () => {
 
         router.replace(url, undefined, { shallow: true })
       } else if (id && !has(router.query, 'new')) {
-        fetchNote(id).catch((msg) => {
-          toast(msg.message, 'error')
-          router.push('/', undefined, { shallow: true })
-        })
+        try {
+          await fetchNote(id)
+        } catch (msg) {
+          if (msg.name !== 'AbortError') {
+            toast(msg.message, 'error')
+            router.push('/', undefined, { shallow: true })
+          }
+        }
       } else {
         if (await noteCache.getItem(id)) {
           router.push(`/${id}`, undefined, { shallow: true })
@@ -78,8 +84,9 @@ export const EditContainer = () => {
   )
 
   useEffect(() => {
+    abortFindNote()
     loadNoteById(id)
-  }, [loadNoteById, id])
+  }, [loadNoteById, abortFindNote, id])
 
   useEffect(() => {
     updateTitle(note?.title)
@@ -88,8 +95,9 @@ export const EditContainer = () => {
   return (
     <>
       <NoteNav />
-      <section className="overflow-y-scroll h-full">
-        <NoteEdit />
+      <DeleteAlert />
+      <section className="h-full">
+        <MainEditor />
       </section>
     </>
   )

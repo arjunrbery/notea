@@ -1,27 +1,37 @@
 import classNames from 'classnames'
 import { forwardRef, HTMLProps } from 'react'
-import Trash from 'heroicons/react/outline/Trash'
-import Menu from 'heroicons/react/outline/Menu'
-import Plus from 'heroicons/react/outline/Plus'
-import DotsHorizontal from 'heroicons/react/outline/DotsHorizontal'
-import ChevronRight from 'heroicons/react/outline/ChevronRight'
-import Reply from 'heroicons/react/outline/Reply'
-import Share from 'heroicons/react/outline/Share'
-import Duplicate from 'heroicons/react/outline/Duplicate'
-import Document from 'heroicons/react/outline/Document'
-import DocumentText from 'heroicons/react/outline/DocumentText'
+import {
+  TrashIcon,
+  MenuIcon,
+  PlusIcon,
+  DotsHorizontalIcon,
+  ChevronRightIcon,
+  ReplyIcon,
+  ShareIcon,
+  DuplicateIcon,
+  DocumentIcon,
+  DocumentTextIcon,
+  SelectorIcon,
+  LinkIcon,
+  ArrowSmLeftIcon,
+  ArrowSmRightIcon,
+} from '@heroicons/react/outline'
 
 export const ICONS = {
-  Trash,
-  Menu,
-  Plus,
-  DotsHorizontal,
-  ChevronRight,
-  Reply,
-  Share,
-  Duplicate,
-  Document,
-  DocumentText,
+  Trash: TrashIcon,
+  Menu: MenuIcon,
+  Plus: PlusIcon,
+  DotsHorizontal: DotsHorizontalIcon,
+  ChevronRight: ChevronRightIcon,
+  Reply: ReplyIcon,
+  Share: ShareIcon,
+  Duplicate: DuplicateIcon,
+  Document: DocumentIcon,
+  DocumentText: DocumentTextIcon,
+  Selector: SelectorIcon,
+  Link: LinkIcon,
+  ArrowSmLeft: ArrowSmLeftIcon,
+  ArrowSmRight: ArrowSmRightIcon,
 }
 
 const IconButton = forwardRef<
@@ -33,7 +43,15 @@ const IconButton = forwardRef<
   }
 >(
   (
-    { children, rounded = true, className, iconClassName = '', icon, ...attrs },
+    {
+      children,
+      rounded = true,
+      className,
+      iconClassName = '',
+      icon,
+      disabled,
+      ...attrs
+    },
     ref
   ) => {
     const Icon = ICONS[icon]
@@ -43,8 +61,12 @@ const IconButton = forwardRef<
         ref={ref}
         {...attrs}
         className={classNames(
-          'p-0.5 hover:bg-gray-400 cursor-pointer w-7 h-7 md:w-6 md:h-6',
-          { rounded },
+          'block p-0.5 cursor-pointer w-7 h-7 md:w-6 md:h-6',
+          {
+            rounded,
+            'cursor-not-allowed opacity-20': disabled,
+          },
+          !disabled && 'hover:bg-gray-400',
           className
         )}
       >

@@ -2,7 +2,7 @@ import classNames from 'classnames'
 import NoteState from 'libs/web/state/note'
 import UIState from 'libs/web/state/ui'
 import { useCallback, MouseEvent } from 'react'
-import { CircularProgress } from '@material-ui/core'
+import { CircularProgress, Tooltip } from '@material-ui/core'
 import NoteTreeState from 'libs/web/state/tree'
 import { Breadcrumbs } from '@material-ui/core'
 import Link from 'next/link'
@@ -11,6 +11,7 @@ import HotkeyTooltip from './hotkey-tooltip'
 import PortalState from 'libs/web/state/portal'
 import { NOTE_SHARED } from 'libs/shared/meta'
 import useI18n from 'libs/web/hooks/use-i18n'
+import NavButtonGroup from './nav-button-group'
 
 const MenuButton = () => {
   const { sidebar } = UIState.useContainer()
@@ -37,25 +38,24 @@ const NoteNav = () => {
   const { note, loading } = NoteState.useContainer()
   const { ua } = UIState.useContainer()
   const { getPaths } = NoteTreeState.useContainer()
-  const {
-    share: { setData: setDataShare, open: openShare },
-    menu: { setData: setDataMenu, open: openMenu },
-  } = PortalState.useContainer()
+  const { share, menu } = PortalState.useContainer()
 
   const handleClickShare = useCallback(
     (event: MouseEvent) => {
-      setDataShare(note)
-      openShare(event)
+      share.setData(note)
+      share.setAnchor(event.target as Element)
+      share.open()
     },
-    [note, setDataShare, openShare]
+    [note, share]
   )
 
   const handleClickMenu = useCallback(
     (event: MouseEvent) => {
-      openMenu(event)
-      setDataMenu(note)
+      menu.setData(note)
+      menu.setAnchor(event.target as Element)
+      menu.open()
     },
-    [note, openMenu, setDataMenu]
+    [note, menu]
   )
 
   if (!note) {
@@ -66,14 +66,18 @@ const NoteNav = () => {
   return (
     <nav
       className={classNames(
-        'absolute bg-gray-50 z-10 p-2 flex items-center left-0 right-0',
+        'fixed bg-gray-50 z-10 p-2 flex items-center right-0',
         {
           shadow: ua.isMobileOnly,
         }
       )}
+      style={{
+        width: ua.isMobileOnly ? '100%' : 'inherit',
+      }}
     >
       {ua.isMobileOnly ? <MenuButton /> : null}
-      <div className="flex-auto">
+      <NavButtonGroup />
+      <div className="flex-auto ml-4">
         <Breadcrumbs
           maxItems={2}
           className="text-gray-800 leading-none"
@@ -82,16 +86,32 @@ const NoteNav = () => {
           {getPaths(note)
             .reverse()
             .map((path) => (
-              <Link key={path.id} href={`/${path.id}`} shallow>
-                <a className="hover:bg-gray-200 px-1 py-0.5 rounded text-sm">
-                  {path.title}
-                </a>
-              </Link>
+              <Tooltip key={path.id} title={path.title}>
+                <div>
+                  <Link href={`/${path.id}`} shallow>
+                    <a className="title block hover:bg-gray-200 px-1 py-0.5 rounded text-sm truncate">
+                      {path.title}
+                    </a>
+                  </Link>
+                </div>
+              </Tooltip>
             ))}
-          <span className="text-gray-600 text-sm" aria-current="page">
-            {note.title}
-          </span>
+          <Tooltip title={note.title}>
+            <span
+              className="title block text-gray-600 text-sm truncate select-none"
+              aria-current="page"
+            >
+              {note.title}
+            </span>
+          </Tooltip>
         </Breadcrumbs>
+        <style jsx>
+          {`
+            .title {
+              max-width: 120px;
+            }
+          `}
+        </style>
       </div>
       <div
         className={classNames('flex mr-2 transition-opacity delay-100', {

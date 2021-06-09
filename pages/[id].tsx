@@ -1,5 +1,4 @@
 import LayoutMain from 'components/layout/layout-main'
-import { applyTree } from 'libs/server/middlewares/tree'
 import { useSession } from 'libs/server/middlewares/session'
 import { applySettings } from 'libs/server/middlewares/settings'
 import { applyAuth, applyRedirectLogin } from 'libs/server/middlewares/auth'
@@ -12,6 +11,7 @@ import { ssr, SSRContext, ServerProps } from 'libs/server/connect'
 import { applyUA } from 'libs/server/middlewares/ua'
 import { applyPostWithAuth } from 'libs/server/middlewares/post'
 import { isNoteLink } from 'libs/shared/note'
+import { applyReset } from 'libs/server/middlewares/reset'
 
 export default function EditNotePage({
   tree,
@@ -30,8 +30,8 @@ export default function EditNotePage({
   }
 
   return (
-    <LayoutPublic tree={tree} note={note}>
-      <PostContainer post={post} pageMode={pageMode} baseURL={baseURL} />
+    <LayoutPublic tree={tree} note={note} pageMode={pageMode} baseURL={baseURL}>
+      <PostContainer note={note} post={post} />
     </LayoutPublic>
   )
 }
@@ -52,7 +52,7 @@ export const getServerSideProps = async (
     .use(applyAuth)
     .use(applyNote(ctx.query.id))
     .use(applyRedirectLogin(ctx.resolvedUrl))
-    .use(applyTree)
+    .use(applyReset)
     .use(applySettings)
     .use(applyCsrf)
     .use(applyUA)

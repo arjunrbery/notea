@@ -1,29 +1,32 @@
-import { FC, RefObject, useCallback, useMemo } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import { use100vh } from 'react-div-100vh'
-import useEditState from './edit-state'
-import { NoteModel } from 'libs/shared/note'
 import MarkdownEditor from 'rich-markdown-editor'
-import { DebouncedState } from 'use-debounce/lib/useDebouncedCallback'
-import { useTheme } from 'next-themes'
-import { darkTheme, lightTheme } from './theme'
+import { useEditorTheme } from './theme'
 import useMounted from 'libs/web/hooks/use-mounted'
 import useI18n from 'libs/web/hooks/use-i18n'
+import Tooltip from './tooltip'
+import extensions from './extensions'
+import EditorState from 'libs/web/state/editor'
+import { useToast } from 'libs/web/hooks/use-toast'
 
-const Editor: FC<{
-  note?: NoteModel
-  onNoteChange: DebouncedState<(data: Partial<NoteModel>) => Promise<void>>
-  editorEl: RefObject<MarkdownEditor>
-}> = ({ onNoteChange, editorEl, note }) => {
+const Editor: FC = () => {
   const {
     onSearchLink,
     onCreateLink,
     onClickLink,
     onUploadImage,
-  } = useEditState()
+    onHoverLink,
+    onNoteChange,
+    backlinks,
+    editorEl,
+    note,
+  } = EditorState.useContainer()
   const height = use100vh()
   const mounted = useMounted()
-  const { resolvedTheme } = useTheme()
   const { t } = useI18n()
+  const editorTheme = useEditorTheme()
+  const [hasMinHeight, setHasMinHeight] = useState(true)
+  const toast = useToast()
 
   const dictionary = useMemo(
     () => ({
@@ -41,7 +44,7 @@ const Editor: FC<{
       codeInline: t('Code'),
       createLink: t('Create link'),
       createLinkError: t('Sorry, an error occurred creating the link'),
-      createNewDoc: t('Create a new doc'),
+      createNewDoc: t('Create a new note'),
       deleteColumn: t('Delete column'),
       deleteRow: t('Delete row'),
       deleteTable: t('Delete table'),
@@ -51,7 +54,7 @@ const Editor: FC<{
       alignImageDefault: t('Center large'),
       em: t('Italic'),
       embedInvalidLink: t('Sorry, that link won’t work for this embed type'),
-      findOrCreateDoc: t('Find or create a doc…'),
+      findOrCreateDoc: t('Find or create a note…'),
       h1: t('Big heading'),
       h2: t('Medium heading'),
       h3: t('Small heading'),
@@ -96,6 +99,10 @@ const Editor: FC<{
     [onNoteChange]
   )
 
+  useEffect(() => {
+    setHasMinHeight((backlinks?.length ?? 0) <= 0)
+  }, [backlinks])
+
   return (
     <>
       <MarkdownEditor
@@ -103,12 +110,16 @@ const Editor: FC<{
         ref={editorEl}
         value={mounted ? note?.content : ''}
         onChange={onEditorChange}
-        theme={resolvedTheme === 'dark' ? darkTheme : lightTheme}
+        theme={editorTheme}
         uploadImage={(file) => onUploadImage(file, note?.id)}
         onSearchLink={onSearchLink}
         onCreateLink={onCreateLink}
         onClickLink={onClickLink}
+        onHoverLink={onHoverLink}
+        onShowToast={toast}
         dictionary={dictionary}
+        tooltip={Tooltip}
+        extensions={extensions}
         className="px-4 md:px-0"
       />
       <style jsx global>{`
@@ -121,7 +132,9 @@ const Editor: FC<{
         }
 
         .ProseMirror {
-          min-height: calc(${height ? height + 'px' : '100vh'} - 14rem);
+          ${hasMinHeight
+            ? `min-height: calc(${height ? height + 'px' : '100vh'} - 14rem);`
+            : ''}
           padding-bottom: 10rem;
         }
 
@@ -133,6 +146,9 @@ const Editor: FC<{
         }
         .ProseMirror h3 {
           font-size: 1.5em;
+        }
+        .ProseMirror a {
+          text-decoration: underline;
         }
       `}</style>
     </>

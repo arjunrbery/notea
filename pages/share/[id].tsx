@@ -1,4 +1,3 @@
-import { applyTree } from 'libs/server/middlewares/tree'
 import { applyUA } from 'libs/server/middlewares/ua'
 import { applySettings } from 'libs/server/middlewares/settings'
 import { applyNote } from 'libs/server/middlewares/note'
@@ -7,6 +6,7 @@ import { PostContainer } from 'components/container/post-container'
 import { ServerProps, ssr, SSRContext } from 'libs/server/connect'
 import { useSession } from 'libs/server/middlewares/session'
 import { applyPost } from 'libs/server/middlewares/post'
+import { applyReset } from 'libs/server/middlewares/reset'
 
 export default function SharePage({
   tree,
@@ -16,8 +16,8 @@ export default function SharePage({
   post,
 }: ServerProps) {
   return (
-    <LayoutPublic tree={tree} note={note}>
-      <PostContainer post={post} pageMode={pageMode} baseURL={baseURL} />
+    <LayoutPublic tree={tree} note={note} pageMode={pageMode} baseURL={baseURL}>
+      <PostContainer note={note} post={post} />
     </LayoutPublic>
   )
 }
@@ -32,7 +32,7 @@ export const getServerSideProps = async (
   await ssr()
     .use(useSession)
     .use(applyNote(ctx.query.id))
-    .use(applyTree)
+    .use(applyReset)
     .use(applySettings)
     .use(applyUA)
     .use(applyPost)

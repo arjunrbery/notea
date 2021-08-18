@@ -1,103 +1,36 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useEffect, useState } from 'react'
 import { use100vh } from 'react-div-100vh'
-import MarkdownEditor from 'rich-markdown-editor'
+import MarkdownEditor, { Props } from 'rich-markdown-editor'
 import { useEditorTheme } from './theme'
 import useMounted from 'libs/web/hooks/use-mounted'
-import useI18n from 'libs/web/hooks/use-i18n'
 import Tooltip from './tooltip'
 import extensions from './extensions'
 import EditorState from 'libs/web/state/editor'
 import { useToast } from 'libs/web/hooks/use-toast'
+import { useDictionary } from './dictionary'
+import { useEmbeds } from './embeds'
 
-const Editor: FC = () => {
+export type EditorProps = Pick<Props, 'readOnly'>
+
+const Editor: FC<EditorProps> = ({ readOnly }) => {
   const {
     onSearchLink,
     onCreateLink,
     onClickLink,
     onUploadImage,
     onHoverLink,
-    onNoteChange,
+    onEditorChange,
     backlinks,
     editorEl,
     note,
   } = EditorState.useContainer()
   const height = use100vh()
   const mounted = useMounted()
-  const { t } = useI18n()
   const editorTheme = useEditorTheme()
   const [hasMinHeight, setHasMinHeight] = useState(true)
   const toast = useToast()
-
-  const dictionary = useMemo(
-    () => ({
-      addColumnAfter: t('Insert column after'),
-      addColumnBefore: t('Insert column before'),
-      addRowAfter: t('Insert row after'),
-      addRowBefore: t('Insert row before'),
-      alignCenter: t('Align center'),
-      alignLeft: t('Align left'),
-      alignRight: t('Align right'),
-      bulletList: t('Bulleted list'),
-      checkboxList: t('Todo list'),
-      codeBlock: t('Code block'),
-      codeCopied: t('Copied to clipboard'),
-      codeInline: t('Code'),
-      createLink: t('Create link'),
-      createLinkError: t('Sorry, an error occurred creating the link'),
-      createNewDoc: t('Create a new note'),
-      deleteColumn: t('Delete column'),
-      deleteRow: t('Delete row'),
-      deleteTable: t('Delete table'),
-      deleteImage: t('Delete image'),
-      alignImageLeft: t('Float left half width'),
-      alignImageRight: t('Float right half width'),
-      alignImageDefault: t('Center large'),
-      em: t('Italic'),
-      embedInvalidLink: t('Sorry, that link won’t work for this embed type'),
-      findOrCreateDoc: t('Find or create a note…'),
-      h1: t('Big heading'),
-      h2: t('Medium heading'),
-      h3: t('Small heading'),
-      heading: t('Heading'),
-      hr: t('Divider'),
-      image: t('Image'),
-      imageUploadError: t('Sorry, an error occurred uploading the image'),
-      info: t('Info'),
-      infoNotice: t('Info notice'),
-      link: t('Link'),
-      linkCopied: t('Link copied to clipboard'),
-      mark: t('Highlight'),
-      newLineEmpty: t("Type '/' to insert…"),
-      newLineWithSlash: t('Keep typing to filter…'),
-      noResults: t('No results'),
-      openLink: t('Open link'),
-      orderedList: t('Ordered list'),
-      pageBreak: t('Page break'),
-      pasteLink: t('Paste a link…'),
-      pasteLinkWithTitle: (title: string): string =>
-        t(`Paste a {{title}} link…`, { title }),
-      placeholder: t('Placeholder'),
-      quote: t('Quote'),
-      removeLink: t('Remove link'),
-      searchOrPasteLink: t('Search or paste a link…'),
-      strikethrough: t('Strikethrough'),
-      strong: t('Bold'),
-      subheading: t('Subheading'),
-      table: t('Table'),
-      tip: t('Tip'),
-      tipNotice: t('Tip notice'),
-      warning: t('Warning'),
-      warningNotice: t('Warning notice'),
-    }),
-    [t]
-  )
-
-  const onEditorChange = useCallback(
-    (value: () => string): void => {
-      onNoteChange.callback({ content: value() })
-    },
-    [onNoteChange]
-  )
+  const dictionary = useDictionary()
+  const embeds = useEmbeds()
 
   useEffect(() => {
     setHasMinHeight((backlinks?.length ?? 0) <= 0)
@@ -106,10 +39,12 @@ const Editor: FC = () => {
   return (
     <>
       <MarkdownEditor
+        readOnly={readOnly}
         id={note?.id}
         ref={editorEl}
         value={mounted ? note?.content : ''}
         onChange={onEditorChange}
+        placeholder={dictionary.editorPlaceholder}
         theme={editorTheme}
         uploadImage={(file) => onUploadImage(file, note?.id)}
         onSearchLink={onSearchLink}
@@ -121,6 +56,7 @@ const Editor: FC = () => {
         tooltip={Tooltip}
         extensions={extensions}
         className="px-4 md:px-0"
+        embeds={embeds}
       />
       <style jsx global>{`
         .ProseMirror ul {
@@ -147,7 +83,7 @@ const Editor: FC = () => {
         .ProseMirror h3 {
           font-size: 1.5em;
         }
-        .ProseMirror a {
+        .ProseMirror a:not(.bookmark) {
           text-decoration: underline;
         }
       `}</style>

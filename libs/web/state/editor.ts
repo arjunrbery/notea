@@ -36,13 +36,14 @@ const onSearchLink = async (keyword: string) => {
   }))
 }
 
-const useEditor = () => {
+const useEditor = (initNote?: NoteModel) => {
   const {
     createNoteWithTitle,
     updateNote,
     createNote,
-    note,
+    note: noteProp,
   } = NoteState.useContainer()
+  const note = initNote ?? noteProp
   const {
     ua: { isBrowser },
   } = UIState.useContainer()
@@ -114,25 +115,33 @@ const useEditor = () => {
     [error, request, toast]
   )
 
-  const { preview } = PortalState.useContainer()
+  const { preview, linkToolbar } = PortalState.useContainer()
 
   const onHoverLink = useCallback(
     (event: MouseEvent | ReactMouseEvent) => {
-      if (!isBrowser) {
+      if (!isBrowser || editorEl.current?.props.readOnly) {
         return true
       }
       const link = event.target as HTMLLinkElement
       const href = link.getAttribute('href')
-      if (href && isNoteLink(href)) {
-        preview.close()
-        preview.setData({ id: href.slice(1) })
-        preview.setAnchor(link)
+      if (link.classList.contains('bookmark')) {
+        return true
+      }
+      if (href) {
+        if (isNoteLink(href)) {
+          preview.close()
+          preview.setData({ id: href.slice(1) })
+          preview.setAnchor(link)
+        } else {
+          linkToolbar.setData({ href, view: editorEl.current?.view })
+          linkToolbar.setAnchor(link)
+        }
       } else {
         preview.setData({ id: undefined })
       }
       return true
     },
-    [preview, isBrowser]
+    [isBrowser, preview, linkToolbar]
   )
 
   const [backlinks, setBackLinks] = useState<NoteCacheItem[]>()
@@ -149,6 +158,13 @@ const useEditor = () => {
     setBackLinks(linkNotes)
   }, [note?.id])
 
+  const onEditorChange = useCallback(
+    (value: () => string): void => {
+      onNoteChange.callback({ content: value() })
+    },
+    [onNoteChange]
+  )
+
   return {
     onCreateLink,
     onSearchLink,
@@ -156,6 +172,7 @@ const useEditor = () => {
     onUploadImage,
     onHoverLink,
     getBackLinks,
+    onEditorChange,
     onNoteChange,
     backlinks,
     editorEl,

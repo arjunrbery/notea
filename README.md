@@ -19,7 +19,7 @@
 ## Roadmap
 
 - [x] Backlinks [#39](https://github.com/QingWei-Li/notea/issues/39)
-- [ ] File embed
+- [x] Link embed(Youtube, Github Gist, Google Docs, etc.)
 - [ ] Editing offline [#14](https://github.com/QingWei-Li/notea/issues/14)
 - [ ] Note versioning [#49](https://github.com/QingWei-Li/notea/issues/49)
 - [ ] File upload
@@ -52,6 +52,7 @@ docker run -d \
   -e STORE_END_POINT=http://play.minio.io \
   -e STORE_FORCE_PATH_STYLE=true \
   -e PASSWORD=notea \
+  # -e COOKIE_SECURE=false \ # This is required on non-https sites
   cinwell/notea
 ```
 
@@ -80,7 +81,7 @@ STORE_BUCKET=notea
 STORE_END_POINT=http://localhost:9000
 # Required
 STORE_FORCE_PATH_STYLE=true
-PASSWORD=
+PASSWORD=notea
 ```
 
 ### Amazon S3
@@ -92,7 +93,7 @@ STORE_ACCESS_KEY=
 STORE_SECRET_KEY=
 STORE_BUCKET=notea
 STORE_REGION=us-east-1
-PASSWORD=
+PASSWORD=notea
 ```
 
 ### Aliyun OSS
@@ -105,7 +106,7 @@ STORE_SECRET_KEY=
 STORE_BUCKET=notea
 STORE_END_POINT=https://oss-cn-hangzhou.aliyuncs.com
 STORE_REGION=oss-cn-hangzhou
-PASSWORD=
+PASSWORD=notea
 ```
 
 ### Tencent COS
@@ -118,7 +119,7 @@ STORE_SECRET_KEY=
 STORE_BUCKET=notea # create the bucket first
 STORE_END_POINT=https://cos.ap-guangzhou.myqcloud.com
 STORE_REGION=ap-guangzhou
-PASSWORD=
+PASSWORD=notea
 ```
 
 ### Oracle Object Storage
@@ -132,7 +133,7 @@ STORE_END_POINT=https://nampespace.compat.objectstorage.ap-chuncheon-1.oracleclo
 STORE_FORCE_PATH_STYLE=true
 STORE_BUCKET=bucketname
 STORE_REGION=ap-chuncheon-1
-PASSWORD=
+PASSWORD=notea
 
 #  bucketname，namespace and region “ap-chuncheon-1” need check your profile and https://docs.oracle.com/en-us/iaas/api/#/en/s3objectstorage/20160918/
 ```
@@ -148,7 +149,7 @@ STORE_BUCKET=notea # create the bucket first
 STORE_END_POINT=https://sos-de-fra-1.exo.io
 STORE_REGION=de-fra-1
 STORE_FORCE_PATH_STYLE=true
-PASSWORD=
+PASSWORD=notea
 ```
 
 Other services that support the s3 protocol can also be used.
@@ -165,6 +166,7 @@ Contribution examples are welcome.
 | STORE_END_POINT            | Host name or an IP address.                                                                                                                                                                                                                           |           |          |          |
 | STORE_REGION               | region                                                                                                                                                                                                                                                | us-east-1 |          |          |
 | STORE_FORCE_PATH_STYLE     | Whether to force path style URLs for S3 objects                                                                                                                                                                                                       | false     |          |          |
+| STORE_PREFIX               | Storage path prefix                                                                                                                                                                                                                                   | ''        |          |          |
 | COOKIE_SECURE              | Only works under https: scheme **If the website is not https, you may not be able to log in, and you need to set it to false**                                                                                                                        | true      |          |          |
 | BASE_URL                   | The domain of the website, used for SEO                                                                                                                                                                                                               |           |          |          |
 | DISABLE_PASSWORD           | Disable password protection. This means that you need to implement authentication on the server yourself, but the route `/share/:id` needs to be accessible anonymously, if you need share page. [#31](https://github.com/QingWei-Li/notea/issues/31) | false     |          |          |
